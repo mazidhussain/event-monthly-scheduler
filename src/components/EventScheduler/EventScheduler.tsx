@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import { Trash2, Edit2, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getRandomColor } from '@/lib/utils';
+import { dayNames, monthNames } from '@/lib/constants';
 
 interface Event {
     id: number;
@@ -24,7 +24,6 @@ const EventScheduler: React.FC = () => {
     const [showEventList, setShowEventList] = useState<boolean>(false);
     const [selectedEvents, setSelectedEvents] = useState<string>("")
 
-    // Get days in month
     const getDaysInMonth = (date: Date): number[] => {
         const year = date.getFullYear();
         const month = date.getMonth();
@@ -32,22 +31,18 @@ const EventScheduler: React.FC = () => {
         return Array.from({ length: days }, (_, i) => i + 1);
     };
 
-    // Get day of week for first day of month (0-6)
     const getFirstDayOfMonth = (date: Date): number => {
         return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
     };
 
-    // Navigate between months
     const changeMonth = (increment: number): void => {
         setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + increment)));
     };
 
-    // Format date key for events object
     const formatDateKey = (date: Date): string => {
         return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     };
 
-    // Handle date selection
     const handleDateClick = (day: number): void => {
         const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
         setSelectedDate(selectedDate);
@@ -57,7 +52,6 @@ const EventScheduler: React.FC = () => {
         setEventDescription('');
     };
 
-    // Handle event submission
     const handleEventSubmit = (e: React.FormEvent): void => {
         e.preventDefault();
         if (!selectedDate) return;
@@ -65,7 +59,6 @@ const EventScheduler: React.FC = () => {
         const dateKey = formatDateKey(selectedDate);
 
         if (editingEvent) {
-            // Update existing event
             const updatedEvents = { ...events };
             const eventIndex = updatedEvents[dateKey].findIndex(event => event.id === editingEvent);
             updatedEvents[dateKey][eventIndex] = {
@@ -75,7 +68,6 @@ const EventScheduler: React.FC = () => {
             };
             setEvents(updatedEvents);
         } else {
-            // Add new event
             const newEvent: Event = {
                 id: Date.now(),
                 title: eventTitle,
@@ -93,7 +85,6 @@ const EventScheduler: React.FC = () => {
         setEditingEvent(null);
     };
 
-    // Handle event deletion
     const handleDeleteEvent = (e: any, dateKey: string, eventId: number): void => {
         const updatedEvents = { ...events };
         updatedEvents[dateKey] = events[dateKey].filter(event => event.id !== eventId);
@@ -103,7 +94,6 @@ const EventScheduler: React.FC = () => {
         setEvents(updatedEvents);
     };
 
-    // Handle event editing
     const handleEditEvent = (dateKey: string, event: Event): void => {
         setSelectedDate(new Date(dateKey));
         setEventTitle(event.title);
@@ -140,7 +130,6 @@ const EventScheduler: React.FC = () => {
         ));
     };
 
-    // Add function to render remaining event count
     const renderRemainingCount = (dateKey: string) => {
         const count = events[dateKey]?.length ?? 0;
         if (count <= 3) return null;
@@ -158,18 +147,9 @@ const EventScheduler: React.FC = () => {
         setSelectedEvents(dateKey);
     }
 
-
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
     return (
         <div className="sm:p-4 md:px-60 md:w-full font-sans">
-            {/* Calendar Container */}
             <div className="bg-white rounded-lg shadow-lg mb-6">
-                {/* Calendar Header */}
                 <div className="flex items-center justify-between p-4 border-b">
                     <h2 className="text-2xl font-semibold text-gray-800">
                         {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
@@ -190,22 +170,18 @@ const EventScheduler: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Calendar Grid */}
                 <div className="p-4">
                     <div className="grid grid-cols-7 gap-2">
-                        {/* Day names */}
                         {dayNames.map(day => (
                             <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
                                 {day}
                             </div>
                         ))}
 
-                        {/* Empty cells for days before start of month */}
                         {Array.from({ length: getFirstDayOfMonth(currentDate) }).map((_, index) => (
                             <div key={`empty-${index}`} className="aspect-square"></div>
                         ))}
 
-                        {/* Calendar days */}
                         {getDaysInMonth(currentDate).map(day => {
                             const dateKey = formatDateKey(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
                             const remainingCount = renderRemainingCount(dateKey)
@@ -215,12 +191,7 @@ const EventScheduler: React.FC = () => {
                                 <div
                                     key={day}
                                     onClick={() => handleDateClick(day)}
-                                    className={`
-                    aspect-square p-2 rounded-lg cursor-pointer relative
-                    border border-gray-200
-                    hover:bg-gray-50 transition-colors
-                    ${hasEvents ? 'bg-blue-50 hover:bg-blue-100' : ''}
-                  `}
+                                    className={`aspect-square p-2 rounded-lg cursor-pointer relative border border-gray-200 hover:bg-gray-50 transition-colors ${hasEvents ? 'bg-blue-50 hover:bg-blue-100' : ''}`}
                                 >
                                     <div className="flex justify-between md:flex-col items-start h-full">
                                         <span className="text-gray-700">{day}</span>
@@ -247,7 +218,6 @@ const EventScheduler: React.FC = () => {
                 </div>
             </div>
 
-            {/* Events List */}
             <div className="bg-white rounded-lg shadow-lg block md:hidden">
                 <div className="p-4 border-b">
                     <h2 className="text-xl font-bold text-gray-800">Events</h2>
@@ -296,7 +266,6 @@ const EventScheduler: React.FC = () => {
                 </div>
             </div>
 
-            {/* Event Form Modal */}
             {showEventForm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white rounded-lg w-full max-w-md mx-4">
@@ -354,6 +323,7 @@ const EventScheduler: React.FC = () => {
                     </div>
                 </div>
             )}
+            
             {showEventList && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white rounded-lg w-full max-w-md mx-4">
