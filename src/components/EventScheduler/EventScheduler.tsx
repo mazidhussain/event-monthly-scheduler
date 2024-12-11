@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import { Trash2, Edit2, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getRandomColor } from '@/lib/utils';
 
 interface Event {
     id: number;
@@ -93,7 +94,7 @@ const EventScheduler: React.FC = () => {
     };
 
     // Handle event deletion
-    const handleDeleteEvent = (dateKey: string, eventId: number): void => {
+    const handleDeleteEvent = (e: any, dateKey: string, eventId: number): void => {
         const updatedEvents = { ...events };
         updatedEvents[dateKey] = events[dateKey].filter(event => event.id !== eventId);
         if (updatedEvents[dateKey].length === 0) {
@@ -109,21 +110,32 @@ const EventScheduler: React.FC = () => {
         setEventDescription(event.description);
         setEditingEvent(event.id);
         setShowEventForm(true);
+        setShowEventList(false);
     };
 
     const renderCellEvents = (dateKey: string) => {
         if (!events[dateKey]) return null;
 
         return events[dateKey].slice(0, 3).map((event, index) => (
-            <div
-                key={event.id}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditEvent(dateKey, event);
-                }}
-                className="text-xs p-1 mb-1 rounded bg-blue-100 hover:bg-blue-200 cursor-pointer truncate"
-            >
-                {event.title}
+            <div className='flex items-center group gap-1' key={event.id}>
+                <div
+                    key={event.id}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditEvent(dateKey, event);
+                    }}
+                    className={`text-xs p-1 mb-1 rounded bg-blue-100 hover:bg-blue-200  cursor-pointer truncate`}
+                >
+                    {event.title}
+                </div>
+                <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                        onClick={(e) => handleDeleteEvent(e, selectedEvents, event.id)}
+                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    >
+                        <Trash2 className="h-4 w-4 text-gray-600" />
+                    </button>
+                </div>
             </div>
         ));
     };
@@ -264,7 +276,7 @@ const EventScheduler: React.FC = () => {
                                                 <Edit2 className="h-4 w-4 text-gray-600" />
                                             </button>
                                             <button
-                                                onClick={() => handleDeleteEvent(dateKey, event.id)}
+                                                onClick={(e) => handleDeleteEvent(e, dateKey, event.id)}
                                                 className="p-1 hover:bg-gray-200 rounded transition-colors"
                                             >
                                                 <Trash2 className="h-4 w-4 text-gray-600" />
@@ -276,7 +288,7 @@ const EventScheduler: React.FC = () => {
                         </div>
                     ))}
                     {
-                        Object.entries(events).length == 0  &&
+                        Object.entries(events).length == 0 &&
                         <div className='flex items-center justify-center h-3'>
                             No Events
                         </div>
@@ -365,6 +377,20 @@ const EventScheduler: React.FC = () => {
                                     <div>
                                         <div className="font-medium text-gray-800">{event.title}</div>
                                         <div className="text-sm text-gray-600">{event.description}</div>
+                                    </div>
+                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => handleEditEvent(selectedEvents, event)}
+                                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                        >
+                                            <Edit2 className="h-4 w-4 text-gray-600" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => handleDeleteEvent(e, selectedEvents, event.id)}
+                                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                        >
+                                            <Trash2 className="h-4 w-4 text-gray-600" />
+                                        </button>
                                     </div>
                                 </div>
                             ))}
